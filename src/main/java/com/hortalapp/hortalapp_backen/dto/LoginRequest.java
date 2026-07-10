@@ -1,0 +1,8 @@
+package com.hortalapp.hortalapp_backen.dto;
+import lombok.Data;
+
+@Data
+public class LoginRequest {
+    private String correo;
+    private String password;
+}
