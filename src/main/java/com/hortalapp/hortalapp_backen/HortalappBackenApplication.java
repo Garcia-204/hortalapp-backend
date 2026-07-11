@@ -9,5 +9,4 @@ public class HortalappBackenApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(HortalappBackenApplication.class, args);
 	}
-
 }

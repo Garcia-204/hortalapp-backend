@@ -1,15 +1,15 @@
 package com.hortalapp.hortalapp_backen.controller;
 
-
+import com.hortalapp.hortalapp_backen.dto.FeriaRequest;
 import com.hortalapp.hortalapp_backen.dto.LoginRequest;
 import com.hortalapp.hortalapp_backen.dto.LoginResponse;
-import com.hortalapp.hortalapp_backen.dto.FeriaRequest;
 import com.hortalapp.hortalapp_backen.entity.Usuario;
 import com.hortalapp.hortalapp_backen.repository.UsuarioRepository;
 import com.hortalapp.hortalapp_backen.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.*;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,9 +24,16 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getCorreo(), request.getPassword()));
+        System.out.println(">>> LLEGÓ AL LOGIN: " + request.getCorreo());
+        try {
+            Authentication auth = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getCorreo(), request.getPassword()));
+            System.out.println(">>> AUTENTICACIÓN EXITOSA");
+        } catch (Exception e) {
+            System.out.println(">>> ERROR EN AUTENTICACIÓN: " + e.getMessage());
+            return ResponseEntity.status(401).body(e.getMessage());
+        }
 
         Usuario usuario = usuarioRepository.findByCorreo(request.getCorreo())
                 .orElseThrow();
@@ -53,7 +60,8 @@ public class AuthController {
     @PutMapping("/feria")
     public ResponseEntity<?> configurarFeria(@RequestBody FeriaRequest request,
                                              Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName()).orElseThrow();
+        Usuario usuario = usuarioRepository
+                .findByCorreo(auth.getName()).orElseThrow();
         usuario.setNombreFeria(request.getNombreFeria());
         usuario.setFeriaConfigurada(true);
         usuarioRepository.save(usuario);
