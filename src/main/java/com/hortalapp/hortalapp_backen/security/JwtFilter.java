@@ -28,18 +28,29 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
+        System.out.println(">>> JWT Filter - Header: " + header);
+        System.out.println(">>> JWT Filter - URI: " + request.getRequestURI());
 
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
-            if (jwtUtil.validarToken(token)) {
-                String correo = jwtUtil.extraerCorreo(token);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(correo);
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities());
-                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(auth);
+            try {
+                if (jwtUtil.validarToken(token)) {
+                    String correo = jwtUtil.extraerCorreo(token);
+                    System.out.println(">>> JWT válido para: " + correo);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(correo);
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails, null, userDetails.getAuthorities());
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                } else {
+                    System.out.println(">>> JWT inválido");
+                }
+            } catch (Exception e) {
+                System.out.println(">>> Error en JWT: " + e.getMessage());
             }
+        } else {
+            System.out.println(">>> No hay token en el header");
         }
         chain.doFilter(request, response);
     }
