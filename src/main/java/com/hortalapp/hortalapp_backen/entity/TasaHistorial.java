@@ -22,7 +22,7 @@ public class TasaHistorial {
     private BigDecimal tasaUsdCop;
 
     @Column(nullable = false, precision = 20, scale = 4)
-    private BigDecimal tasaBsCop;
+    private BigDecimal tasaUsdBs;
 
     @Column(nullable = false)
     private LocalDateTime fechaHora;

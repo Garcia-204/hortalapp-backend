@@ -1,6 +1,5 @@
 package com.hortalapp.hortalapp_backen.service;
 
-
 import com.hortalapp.hortalapp_backen.entity.Jornada;
 import com.hortalapp.hortalapp_backen.entity.TasaHistorial;
 import com.hortalapp.hortalapp_backen.entity.Usuario;
@@ -22,38 +21,37 @@ public class JornadaService {
     public Jornada crearJornada(Usuario usuario, String nombre,
                                 Jornada.Moneda monedaBase,
                                 BigDecimal tasaUsdCop,
-                                BigDecimal tasaBsCop) {
+                                BigDecimal tasaUsdBs) {
         Jornada jornada = new Jornada();
         jornada.setUsuario(usuario);
         jornada.setNombre(nombre);
         jornada.setMonedaBase(monedaBase);
         jornada.setTasaUsdCop(tasaUsdCop);
-        jornada.setTasaBsCop(tasaBsCop);
+        jornada.setTasaUsdBs(tasaUsdBs);
         jornada = jornadaRepository.save(jornada);
 
-        TasaHistorial tasa = new TasaHistorial();
-        tasa.setJornada(jornada);
-        tasa.setTasaUsdCop(tasaUsdCop);
-        tasa.setTasaBsCop(tasaBsCop);
-        tasaHistorialRepository.save(tasa);
-
+        guardarHistorialTasa(jornada, tasaUsdCop, tasaUsdBs);
         return jornada;
     }
 
     public Jornada actualizarTasas(Long jornadaId, Usuario usuario,
-                                   BigDecimal tasaUsdCop, BigDecimal tasaBsCop) {
+                                   BigDecimal tasaUsdCop, BigDecimal tasaUsdBs) {
         Jornada jornada = obtenerJornadaDeUsuario(jornadaId, usuario);
         jornada.setTasaUsdCop(tasaUsdCop);
-        jornada.setTasaBsCop(tasaBsCop);
+        jornada.setTasaUsdBs(tasaUsdBs);
         jornada = jornadaRepository.save(jornada);
+        guardarHistorialTasa(jornada, tasaUsdCop, tasaUsdBs);
+        return jornada;
+    }
 
+    private void guardarHistorialTasa(Jornada jornada,
+                                      BigDecimal tasaUsdCop,
+                                      BigDecimal tasaUsdBs) {
         TasaHistorial tasa = new TasaHistorial();
         tasa.setJornada(jornada);
         tasa.setTasaUsdCop(tasaUsdCop);
-        tasa.setTasaBsCop(tasaBsCop);
+        tasa.setTasaUsdBs(tasaUsdBs);
         tasaHistorialRepository.save(tasa);
-
-        return jornada;
     }
 
     public Jornada cerrarJornada(Long jornadaId, Usuario usuario) {

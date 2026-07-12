@@ -28,27 +28,23 @@ public class GastoService {
         }
 
         BigDecimal tasaUsdCop = jornada.getTasaUsdCop();
-        BigDecimal tasaBsCop  = jornada.getTasaBsCop();
+        BigDecimal tasaUsdBs  = jornada.getTasaUsdBs();
 
-        BigDecimal valorCop = MonedaUtil.convertirACop(
-                valor, moneda.name(), tasaUsdCop, tasaBsCop);
+        BigDecimal valorCop = MonedaUtil.convertirACop(valor, moneda.name(), tasaUsdCop, tasaUsdBs);
+        BigDecimal valorUsd = MonedaUtil.convertirAUsd(valor, moneda.name(), tasaUsdCop, tasaUsdBs);
+        BigDecimal valorBs  = MonedaUtil.convertirABs(valor, moneda.name(), tasaUsdCop, tasaUsdBs);
 
-        BigDecimal totalRecibidoCop = ventaRepository
-                .sumPagoTotalCopByJornadaId(jornadaId);
-        BigDecimal totalGastadoCop = gastoRepository
-                .sumValorCopByJornadaId(jornadaId);
-        BigDecimal saldoDisponible = totalRecibidoCop.subtract(totalGastadoCop);
+        BigDecimal totalRecibidoCop = ventaRepository.sumPagoTotalCopByJornadaId(jornadaId);
+        BigDecimal totalGastadoCop  = gastoRepository.sumValorCopByJornadaId(jornadaId);
+        BigDecimal saldoDisponible  = totalRecibidoCop.subtract(totalGastadoCop);
 
         if (valorCop.compareTo(saldoDisponible) > 0) {
-            BigDecimal disponibleEnMoneda = MonedaUtil.convertirDesdeACop(
-                    saldoDisponible, moneda.name(), tasaUsdCop, tasaBsCop);
+            BigDecimal disponibleEnMoneda = MonedaUtil.convertirDesdeCop(
+                    saldoDisponible, moneda.name(), tasaUsdCop, tasaUsdBs);
             throw new RuntimeException(
                     "Saldo insuficiente. Disponible: " +
                             disponibleEnMoneda + " " + moneda.name());
         }
-
-        BigDecimal valorUsd = MonedaUtil.convertirDesdeACop(valorCop, "USD", tasaUsdCop, tasaBsCop);
-        BigDecimal valorBs  = MonedaUtil.convertirDesdeACop(valorCop, "BS",  tasaUsdCop, tasaBsCop);
 
         Gasto gasto = new Gasto();
         gasto.setJornada(jornada);
@@ -59,7 +55,7 @@ public class GastoService {
         gasto.setValorUsd(valorUsd);
         gasto.setValorBs(valorBs);
         gasto.setTasaUsdCopUsada(tasaUsdCop);
-        gasto.setTasaBsCopUsada(tasaBsCop);
+        gasto.setTasaUsdBsUsada(tasaUsdBs);
         return gastoRepository.save(gasto);
     }
 
@@ -71,9 +67,8 @@ public class GastoService {
     }
 
     public List<Gasto> listarGastos(Long jornadaId, Usuario usuario) {
-        jornadaService.obtenerJornadaDeUsuario(jornadaId, usuario);
-        return gastoRepository.findByJornadaOrderByFechaHoraDesc(
-                jornadaService.obtenerJornadaDeUsuario(jornadaId, usuario));
+        Jornada jornada = jornadaService.obtenerJornadaDeUsuario(jornadaId, usuario);
+        return gastoRepository.findByJornadaOrderByFechaHoraDesc(jornada);
     }
 
     public BigDecimal saldoDisponibleCop(Long jornadaId) {

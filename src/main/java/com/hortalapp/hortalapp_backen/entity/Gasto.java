@@ -41,7 +41,7 @@ public class Gasto {
     private BigDecimal tasaUsdCopUsada;
 
     @Column(nullable = false, precision = 20, scale = 4)
-    private BigDecimal tasaBsCopUsada;
+    private BigDecimal tasaUsdBsUsada;
 
     @Column(nullable = false)
     private LocalDateTime fechaHora;

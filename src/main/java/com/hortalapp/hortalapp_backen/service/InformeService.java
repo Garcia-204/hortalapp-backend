@@ -1,5 +1,6 @@
 package com.hortalapp.hortalapp_backen.service;
 
+
 import com.hortalapp.hortalapp_backen.entity.Gasto;
 import com.hortalapp.hortalapp_backen.entity.Jornada;
 import com.hortalapp.hortalapp_backen.entity.Producto;
@@ -27,13 +28,12 @@ public class InformeService {
     public InformeDTO generarInforme(Long jornadaId, Usuario usuario) {
         Jornada jornada = jornadaService.obtenerJornadaDeUsuario(jornadaId, usuario);
         BigDecimal tasaUsdCop = jornada.getTasaUsdCop();
-        BigDecimal tasaBsCop  = jornada.getTasaBsCop();
+        BigDecimal tasaUsdBs  = jornada.getTasaUsdBs();
 
         List<Venta> ventas   = ventaRepository.findByJornadaOrderByFechaHoraDesc(jornada);
         List<Gasto> gastos   = gastoRepository.findByJornadaOrderByFechaHoraDesc(jornada);
         List<Producto> prods = productoRepository.findByJornada(jornada);
 
-        // Ingresos reales por moneda
         BigDecimal ingresosCop = BigDecimal.ZERO;
         BigDecimal ingresosUsd = BigDecimal.ZERO;
         BigDecimal ingresosBs  = BigDecimal.ZERO;
@@ -44,7 +44,6 @@ public class InformeService {
             ingresosBs  = ingresosBs.add(v.getTotalBs());
         }
 
-        // Gastos reales por moneda
         BigDecimal gastosCop = BigDecimal.ZERO;
         BigDecimal gastosUsd = BigDecimal.ZERO;
         BigDecimal gastosBs  = BigDecimal.ZERO;
@@ -55,12 +54,10 @@ public class InformeService {
             gastosBs  = gastosBs.add(g.getValorBs());
         }
 
-        // Ganancia neta por moneda
         BigDecimal gananciaCop = ingresosCop.subtract(gastosCop).setScale(4, RoundingMode.HALF_UP);
         BigDecimal gananciaUsd = ingresosUsd.subtract(gastosUsd).setScale(4, RoundingMode.HALF_UP);
         BigDecimal gananciaBs  = ingresosBs.subtract(gastosBs).setScale(4, RoundingMode.HALF_UP);
 
-        // Dinero en caja por moneda
         BigDecimal cajaCop = BigDecimal.ZERO;
         BigDecimal cajaUsd = BigDecimal.ZERO;
         BigDecimal cajaBs  = BigDecimal.ZERO;

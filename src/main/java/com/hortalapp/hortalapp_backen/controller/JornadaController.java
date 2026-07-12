@@ -33,7 +33,7 @@ public class JornadaController {
                 request.getNombre(),
                 Jornada.Moneda.valueOf(request.getMonedaBase()),
                 request.getTasaUsdCop(),
-                request.getTasaBsCop()
+                request.getTasaUsdBs()
         );
         return ResponseEntity.ok(jornada);
     }

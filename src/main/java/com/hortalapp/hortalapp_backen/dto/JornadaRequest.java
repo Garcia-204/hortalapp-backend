@@ -1,6 +1,5 @@
 package com.hortalapp.hortalapp_backen.dto;
 
-
 import lombok.Data;
 import java.math.BigDecimal;
 
@@ -9,5 +8,5 @@ public class JornadaRequest {
     private String nombre;
     private String monedaBase;
     private BigDecimal tasaUsdCop;
-    private BigDecimal tasaBsCop;
+    private BigDecimal tasaUsdBs;
 }

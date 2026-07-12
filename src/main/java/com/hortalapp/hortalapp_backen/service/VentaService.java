@@ -1,6 +1,5 @@
 package com.hortalapp.hortalapp_backen.service;
 
-
 import com.hortalapp.hortalapp_backen.entity.Jornada;
 import com.hortalapp.hortalapp_backen.entity.Producto;
 import com.hortalapp.hortalapp_backen.entity.Usuario;
@@ -38,55 +37,44 @@ public class VentaService {
 
         Producto producto = productoService.obtenerProducto(productoId);
         BigDecimal tasaUsdCop = jornada.getTasaUsdCop();
-        BigDecimal tasaBsCop  = jornada.getTasaBsCop();
+        BigDecimal tasaUsdBs  = jornada.getTasaUsdBs();
 
-        // Total de la venta en COP
-        BigDecimal precioCop = MonedaUtil.convertirACop(
+        BigDecimal precioUsd = MonedaUtil.convertirAUsd(
                 producto.getPrecioValor(),
                 producto.getPrecioMoneda().name(),
-                tasaUsdCop, tasaBsCop);
-        BigDecimal totalCop = precioCop.multiply(cantidad)
-                .setScale(4, RoundingMode.HALF_UP);
-        BigDecimal totalUsd = MonedaUtil.convertirDesdeACop(totalCop, "USD", tasaUsdCop, tasaBsCop);
-        BigDecimal totalBs  = MonedaUtil.convertirDesdeACop(totalCop, "BS",  tasaUsdCop, tasaBsCop);
+                tasaUsdCop, tasaUsdBs);
 
-        // Total recibido en COP
-        BigDecimal pagoCop1 = MonedaUtil.convertirACop(
-                pagoCantidad1, pagoMoneda1, tasaUsdCop, tasaBsCop);
+        BigDecimal totalUsd = precioUsd.multiply(cantidad).setScale(4, RoundingMode.HALF_UP);
+        BigDecimal totalCop = MonedaUtil.convertirACop(totalUsd, "USD", tasaUsdCop, tasaUsdBs);
+        BigDecimal totalBs  = MonedaUtil.convertirABs(totalUsd, "USD", tasaUsdCop, tasaUsdBs);
+
+        BigDecimal pagoCop1 = MonedaUtil.convertirACop(pagoCantidad1, pagoMoneda1, tasaUsdCop, tasaUsdBs);
         BigDecimal pagoCop2 = BigDecimal.ZERO;
         if (pagoMixto && pagoMoneda2 != null && pagoCantidad2 != null) {
-            pagoCop2 = MonedaUtil.convertirACop(
-                    pagoCantidad2, pagoMoneda2, tasaUsdCop, tasaBsCop);
+            pagoCop2 = MonedaUtil.convertirACop(pagoCantidad2, pagoMoneda2, tasaUsdCop, tasaUsdBs);
         }
         BigDecimal pagoTotalCop = pagoCop1.add(pagoCop2);
 
-        // Validar que el pago alcanza
         if (pagoTotalCop.compareTo(totalCop) < 0) {
             throw new RuntimeException("El pago recibido no cubre el total de la venta");
         }
 
-        // Calcular vuelto
         BigDecimal vueltoTotalCop = pagoTotalCop.subtract(totalCop);
-        BigDecimal vueltoTotalUsd = MonedaUtil.convertirDesdeACop(vueltoTotalCop, "USD", tasaUsdCop, tasaBsCop);
-        BigDecimal vueltoTotalBs  = MonedaUtil.convertirDesdeACop(vueltoTotalCop, "BS",  tasaUsdCop, tasaBsCop);
+        BigDecimal vueltoTotalUsd = MonedaUtil.convertirDesdeCop(vueltoTotalCop, "USD", tasaUsdCop, tasaUsdBs);
+        BigDecimal vueltoTotalBs  = MonedaUtil.convertirDesdeCop(vueltoTotalCop, "BS",  tasaUsdCop, tasaUsdBs);
 
-        // Calcular vuelto mixto
         BigDecimal vueltoCantidad2Calculada = BigDecimal.ZERO;
         if (vueltoMixto && vueltoMoneda1 != null && vueltoCantidad1 != null && vueltoMoneda2 != null) {
-            BigDecimal vueltoDado1Cop = MonedaUtil.convertirACop(
-                    vueltoCantidad1, vueltoMoneda1, tasaUsdCop, tasaBsCop);
+            BigDecimal vueltoDado1Cop = MonedaUtil.convertirACop(vueltoCantidad1, vueltoMoneda1, tasaUsdCop, tasaUsdBs);
             BigDecimal vueltoRestanteCop = vueltoTotalCop.subtract(vueltoDado1Cop);
             if (vueltoRestanteCop.compareTo(BigDecimal.ZERO) < 0) {
                 throw new RuntimeException("El vuelto en moneda 1 supera el total del vuelto");
             }
-            vueltoCantidad2Calculada = MonedaUtil.convertirDesdeACop(
-                    vueltoRestanteCop, vueltoMoneda2, tasaUsdCop, tasaBsCop);
+            vueltoCantidad2Calculada = MonedaUtil.convertirDesdeCop(vueltoRestanteCop, vueltoMoneda2, tasaUsdCop, tasaUsdBs);
         }
 
-        // Descontar inventario
         productoService.descontarInventario(producto, cantidad);
 
-        // Guardar venta
         Venta venta = new Venta();
         venta.setJornada(jornada);
         venta.setProducto(producto);
@@ -94,8 +82,7 @@ public class VentaService {
         venta.setTotalCop(totalCop);
         venta.setTotalUsd(totalUsd);
         venta.setTotalBs(totalBs);
-        venta.setTotalEnMonedaBase(MonedaUtil.convertirDesdeACop(
-                totalCop, jornada.getMonedaBase().name(), tasaUsdCop, tasaBsCop));
+        venta.setTotalEnMonedaBase(MonedaUtil.convertirAUsd(totalUsd, "USD", tasaUsdCop, tasaUsdBs));
         venta.setPagoMixto(pagoMixto);
         venta.setPagoMoneda1(Jornada.Moneda.valueOf(pagoMoneda1));
         venta.setPagoCantidad1(pagoCantidad1);
@@ -111,7 +98,7 @@ public class VentaService {
         venta.setVueltoMoneda2(vueltoMoneda2 != null ? Jornada.Moneda.valueOf(vueltoMoneda2) : null);
         venta.setVueltoCantidad2(vueltoCantidad2Calculada);
         venta.setTasaUsdCopUsada(tasaUsdCop);
-        venta.setTasaBsCopUsada(tasaBsCop);
+        venta.setTasaUsdBsUsada(tasaUsdBs);
         return ventaRepository.save(venta);
     }
 
