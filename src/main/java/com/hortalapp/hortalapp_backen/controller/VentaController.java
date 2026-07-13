@@ -2,7 +2,7 @@ package com.hortalapp.hortalapp_backen.controller;
 
 
 
-import com.hortalapp.hortalapp_backen.dto.VentaRequest;
+import com.hortalapp.hortalapp_backen.dto.VentaCarritoRequest;
 import com.hortalapp.hortalapp_backen.entity.Usuario;
 import com.hortalapp.hortalapp_backen.repository.UsuarioRepository;
 import com.hortalapp.hortalapp_backen.service.VentaService;
@@ -25,18 +25,10 @@ public class VentaController {
 
     @PostMapping
     public ResponseEntity<?> registrar(@PathVariable Long jornadaId,
-                                       @RequestBody VentaRequest r,
+                                       @RequestBody VentaCarritoRequest request,
                                        Authentication auth) {
-        return ResponseEntity.ok(ventaService.registrarVenta(
-                jornadaId, getUsuario(auth),
-                r.getProductoId(), r.getCantidad(),
-                r.getPagoMixto(),
-                r.getPagoMoneda1(), r.getPagoCantidad1(),
-                r.getPagoMoneda2(), r.getPagoCantidad2(),
-                r.getVueltoMixto(),
-                r.getVueltoMoneda1(), r.getVueltoCantidad1(),
-                r.getVueltoMoneda2()
-        ));
+        return ResponseEntity.ok(ventaService.registrarVentaCarrito(
+                jornadaId, getUsuario(auth), request));
     }
 
     @GetMapping

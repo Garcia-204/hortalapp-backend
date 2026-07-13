@@ -1,9 +1,11 @@
 package com.hortalapp.hortalapp_backen.entity;
 
+
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "ventas")
@@ -18,21 +20,14 @@ public class Venta {
     @JoinColumn(name = "jornada_id", nullable = false)
     private Jornada jornada;
 
-    @ManyToOne
-    @JoinColumn(name = "producto_id", nullable = false)
-    private Producto producto;
-
-    @Column(nullable = false, precision = 20, scale = 4)
-    private BigDecimal cantidad;
-
-    @Column(nullable = false, precision = 20, scale = 4)
-    private BigDecimal totalEnMonedaBase;
-
-    @Column(nullable = false, precision = 20, scale = 4)
-    private BigDecimal totalCop;
+    @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)
+    private List<VentaItem> items;
 
     @Column(nullable = false, precision = 20, scale = 4)
     private BigDecimal totalUsd;
+
+    @Column(nullable = false, precision = 20, scale = 4)
+    private BigDecimal totalCop;
 
     @Column(nullable = false, precision = 20, scale = 4)
     private BigDecimal totalBs;
