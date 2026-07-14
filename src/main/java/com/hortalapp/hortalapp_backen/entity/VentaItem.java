@@ -1,6 +1,7 @@
 package com.hortalapp.hortalapp_backen.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -16,6 +17,7 @@ public class VentaItem {
 
     @ManyToOne
     @JoinColumn(name = "venta_id", nullable = false)
+    @JsonBackReference
     private Venta venta;
 
     @ManyToOne

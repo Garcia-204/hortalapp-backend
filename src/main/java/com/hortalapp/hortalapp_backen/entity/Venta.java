@@ -1,6 +1,7 @@
 package com.hortalapp.hortalapp_backen.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -21,6 +22,7 @@ public class Venta {
     private Jornada jornada;
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<VentaItem> items;
 
     @Column(nullable = false, precision = 20, scale = 4)
